@@ -1,0 +1,35 @@
+name: Build Android APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install dependencies
+        run: npm install
+      - name: Build web
+        run: npm run build
+      - name: Capacitor sync
+        run: npx cap sync android
+      - name: Add WiFi permissions
+        run: |
+          sed -i 's|</manifest>|<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>\n<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>\n<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>\n</manifest>|' android/app/src/main/AndroidManifest.xml
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wifi-friend-finder-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
