@@ -19,6 +19,8 @@ jobs:
         run: npm install
       - name: Build web
         run: npm run build
+      - name: Add Android platform
+        run: npx cap add android
       - name: Capacitor sync
         run: npx cap sync android
       - name: Add WiFi permissions
